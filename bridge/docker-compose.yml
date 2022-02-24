@@ -1,0 +1,36 @@
+version: "3"
+services:
+
+  leo:
+    build: 
+      context: leo-rover
+      dockerfile: Dockerfile
+    container_name: ros-leo
+    image: ros-leo
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    environment:
+     - "DISPLAY"
+     - "ROS_HOSTNAME=ros-leo"
+     - "ROS_MASTER_URI=http://localhost:11311"
+    restart: always
+
+      
+  bridge:
+    build: 
+      context: rosbridge
+      dockerfile: Dockerfile
+    #container_name: ros-bridge
+    image: ros-bridge
+    environment:
+     - "ROS_HOSTNAME=bridge"
+     - "ROS_MASTER_URI=http://ros-leo:11311"
+    depends_on:
+     - leo
+    ports:
+      - "9090:9090"
+    restart: always
+
+
+volumes:
+  mydata:
