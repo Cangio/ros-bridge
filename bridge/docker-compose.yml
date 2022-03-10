@@ -18,21 +18,32 @@ services:
     restart: always
 
 
-  bridge:
-    build:
-      context: rosbridge
-      dockerfile: Dockerfile
+  #bridge:
+  #  build:
+  #    context: rosbridge
+  #    dockerfile: Dockerfile
     #container_name: ros-bridge
-    image: ros-bridge
-    environment:
-     - "ROS_HOSTNAME=bridge"
-     - "ROS_IP=172.19.0.4"
-     - "ROS_MASTER_URI=http://leo:11311"
-    depends_on:
-     - leo
+  #  image: ros-bridge
+  #  environment:
+  #   - "ROS_HOSTNAME=bridge"
+  #   - "ROS_IP=172.19.0.4"
+  #   - "ROS_MASTER_URI=http://leo:11311"
+  #  depends_on:
+  #   - leo
     #network_mode: "host"
+  #  ports:
+  #    - "9090:9090"
+  #  command:
+  #    - ros2 run ros1_bridge dynamic_bridge
+  #  restart: always
+  bridge:
+    image: ros:foxy-ros1-bridge
+    environment:
+      - "ROS_IP=172.19.0.4"
+      - "ROS_HOSTNAME=bridge"
+      - "ROS_MASTER_URI=http://leo:11311"
+    depends_on:
+       - leo
     ports:
-      - "9090:9090"
-    command:
-      - ros2 run ros1_bridge dynamic_bridge
-    restart: always
+        - "9090:9090"
+    command: ros2 run ros1_bridge dynamic_bridge
