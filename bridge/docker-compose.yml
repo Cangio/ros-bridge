@@ -1,6 +1,9 @@
 version: "3"
-services:
+networks:
+  leo_network:
+    external: true
 
+services:
   leo:
     build:
       context: leo-rover
@@ -10,40 +13,36 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
     #network_mode: "host"
+    # No need to expose ports, inside the leo_network the bridge can see container port 11311
+    #ports:
+    #  - "11311:11311"
+    networks:
+      - leo_network
     environment:
-     - "DISPLAY"
-     - "ROS_IP=172.19.0.3"
-     - "ROS_HOSTNAME=leo"
-     - "ROS_MASTER_URI=http://localhost:11311"
+      - "DISPLAY"
+      # If assigning IP, make shure is the same as in leo_network
+    #  - "ROS_IP=172.19.0.3"
+      - "ROS_HOSTNAME=leo"
+      - "ROS_MASTER_URI=http://localhost:11311"
     restart: always
 
 
-  #bridge:
-  #  build:
-  #    context: rosbridge
-  #    dockerfile: Dockerfile
-    #container_name: ros-bridge
-  #  image: ros-bridge
-  #  environment:
-  #   - "ROS_HOSTNAME=bridge"
-  #   - "ROS_IP=172.19.0.4"
-  #   - "ROS_MASTER_URI=http://leo:11311"
-  #  depends_on:
-  #   - leo
-    #network_mode: "host"
-  #  ports:
-  #    - "9090:9090"
-  #  command:
-  #    - ros2 run ros1_bridge dynamic_bridge
-  #  restart: always
   bridge:
     image: ros:foxy-ros1-bridge
     environment:
-      - "ROS_IP=172.19.0.4"
+      # If assigning IP, make shure is the same as in leo_network
+    #  - "ROS_IP=172.19.0.4"
       - "ROS_HOSTNAME=bridge"
       - "ROS_MASTER_URI=http://leo:11311"
+    networks:
+      - leo_network
     depends_on:
-       - leo
+      - leo
     ports:
-        - "9090:9090"
+      # Open DDS standard ports for Domain ID 0 in host
+      # Read in https://docs.ros.org/en/galactic/Concepts/About-Domain-ID.html
+      - "7400:7400/udp"
+      - "7401:7401/udp"
+      - "7410:7410/udp"
+      - "7411:7411/udp"
     command: ros2 run ros1_bridge dynamic_bridge
